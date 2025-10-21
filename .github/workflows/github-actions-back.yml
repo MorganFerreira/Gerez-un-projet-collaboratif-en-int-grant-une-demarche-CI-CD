@@ -1,0 +1,47 @@
+name: Java CI with Maven
+
+on:
+  push:
+    branches: [ "main" ]
+    paths:
+      - 'back/**'
+      - '.github/workflows/github-actions-back.yml'
+  pull_request:
+    branches: [ "main" ]
+    paths:
+      - 'back/**'
+      - '.github/workflows/github-actions-back.yml'
+
+permissions:
+  contents: read
+  checks: write
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Set up JDK 17
+      uses: actions/setup-java@v4
+      with:
+        java-version: '17'
+        distribution: 'temurin'
+        cache: maven
+        
+    - name: Build with Maven
+      working-directory: ./back
+      run: mvn -B package --file pom.xml
+
+    - name: Test with Maven
+      working-directory: ./back
+      run: mvn clean test
+
+    - name: Upload test report summary
+      uses: phoenix-actions/test-reporting@v8
+      with:
+          name: Junit Tests
+          path: back/target/surefire-reports/*.xml
+          reporter: java-junit
