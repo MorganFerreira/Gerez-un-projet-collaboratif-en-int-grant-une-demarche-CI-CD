@@ -22,10 +22,11 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v4
+    - name: Checkout
+      uses: actions/checkout@v5.0.0
     
     - name: Set up JDK 17
-      uses: actions/setup-java@v4
+      uses: actions/setup-java@v5.0.0
       with:
         java-version: '17'
         distribution: 'temurin'
@@ -40,7 +41,7 @@ jobs:
       run: mvn clean test
 
     - name: Upload test report summary
-      uses: phoenix-actions/test-reporting@v8
+      uses: phoenix-actions/test-reporting@v15
       with:
           name: Junit Tests
           path: back/target/surefire-reports/*.xml
