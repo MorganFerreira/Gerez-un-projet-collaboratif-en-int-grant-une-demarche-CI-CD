@@ -1,0 +1,48 @@
+name: CI Frontend
+
+on:
+  push:
+    branches: [ "main" ]
+    paths:
+      - 'front/**'
+      - '.github/workflows/github-actions-front.yml'
+  pull_request:
+    branches: [ "main" ]
+    paths:
+      - 'front/**'
+      - '.github/workflows/github-actions-front.yml'
+
+permissions:
+  contents: read
+  checks: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v5.0.0
+
+    - name: Cache dependencies
+      uses: actions/cache@v4.3.0
+      with:
+        path: ~/.npm
+        key: ${{ runner.os }}-npm-${{ hashFiles('**/package-lock.json') }}
+        restore-keys: |
+          ${{ runner.os }}-npm-
+  
+    - name: Build frontend
+      working-directory: ./front
+      run: npm i &&  npm run build --if-present
+    
+    - name: Launch tests and generate coverage
+      working-directory: ./front
+      run: npm test
+
+    - name: Upload coverage
+      uses: phoenix-actions/test-reporting@v15
+      with:
+        name: Karma Jasmine Tests
+        path: front/test-results/test-results.xml
+        reporter: java-junit
