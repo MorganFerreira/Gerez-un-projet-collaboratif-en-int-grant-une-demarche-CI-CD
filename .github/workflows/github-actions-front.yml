@@ -42,15 +42,9 @@ jobs:
         npm run test-coverage
 
     - name: Upload coverage
-      uses: phoenix-actions/test-reporting@v15
+      uses: phoenix-actions/test-reporting@v8
+      if: success()
       with:
         name: Karma Jasmine Tests
         path: front/test-results/test-results.xml
         reporter: java-junit
-    
-    - name: Commit Karma Code Coverage Report
-      run: |
-          git fetch
-          git add coverage/bobapp
-          git commit -m "Ajout du rapport de couverture"
-          git push main
