@@ -18,27 +18,28 @@ permissions:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
-    
+    name: Test on node ${{ matrix.node_version }} and ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        node_version: ['18.x', '20.x']
+        os: [ubuntu-latest, windows-latest, macOS-latest]
+        
     steps:
     - name: Checkout
       uses: actions/checkout@v5.0.0
-
-    - name: Cache dependencies
-      uses: actions/cache@v4.3.0
-      with:
-        path: ~/.npm
-        key: ${{ runner.os }}-npm-${{ hashFiles('**/package-lock.json') }}
-        restore-keys: |
-          ${{ runner.os }}-npm-
-  
-    - name: Build frontend
-      working-directory: ./front
-      run: npm i &&  npm run build --if-present
     
-    - name: Launch tests and generate coverage
+    - name: Use Node.js ${{ matrix.node_version }}
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ matrix.node_version }}
+  
+    - name: npm install, build and test
       working-directory: ./front
-      run: npm test
+      run: |
+        npm install
+        npm run build --if-present
+        npm run test-coverage
 
     - name: Upload coverage
       uses: phoenix-actions/test-reporting@v15
@@ -46,3 +47,10 @@ jobs:
         name: Karma Jasmine Tests
         path: front/test-results/test-results.xml
         reporter: java-junit
+    
+    - name: Commit Karma Code Coverage Report
+      run: |
+          git fetch
+          git add coverage/bobapp
+          git commit -m "Ajout du rapport de couverture"
+          git push main
